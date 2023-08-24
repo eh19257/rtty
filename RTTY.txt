@@ -1,0 +1,11 @@
+Issues with running on WSl
+    - systemd not supported by WSL and so we cant do things like "systemctl sdrplay_apiService start" so we need to instead run the service normally as a binary with "sudo /usr/local/bin/sdrplay_apiService" (this needs to be run as sudo). We might be able to use "service sdrplay_apiService start" isntead but that was never looked into in much detail.
+    - Another issue is that my copy of WSL doesn't seem to support the filesystem type "devtmpfs". Support for this is needed for the service "udev" to run - udev is dependency of libusb.
+
+    - WSL 1 doesn't like mounting with udev and usbipd (usbipd-win) so we need to upgrade to WSL 2 and my version of WSL doesnt seem to want to WSL 2 and Ive checked online and no one seems to have my same problem, this is smth I can look at in the future.
+    
+    - Note: using "sudo apt-get update" on WSL 2 might fuck up the use of "usbip" which inturn fucks up the attaching of USB devices to WSL 2. to fix this you need to run "sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20" - more info about this can be found here --> https://github.com/dorssel/usbipd-win/wiki/WSL-support
+
+
+General notes:
+    - 
