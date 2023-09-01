@@ -7,5 +7,7 @@ Issues with running on WSl
     - Note: using "sudo apt-get update" on WSL 2 might fuck up the use of "usbip" which inturn fucks up the attaching of USB devices to WSL 2. to fix this you need to run "sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20" - more info about this can be found here --> https://github.com/dorssel/usbipd-win/wiki/WSL-support
 
 
-General notes:
-    - 
+Sampling Issues:
+    - We cannot have a sampling rate less than 2 MSPS (million samples per second) as the RSP1 does not allow this (this is behaviour that is standard for legit RSP1s)
+    - I don't think the callbacks can write all of the samples to a data file fast enough before the end of the program.
+    
