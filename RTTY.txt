@@ -8,6 +8,8 @@ Issues with running on WSl
 
 
 Sampling Issues:
-    - We cannot have a sampling rate less than 2 MSPS (million samples per second) as the RSP1 does not allow this (this is behaviour that is standard for legit RSP1s)
+    - We cannot have a sampling rate less than 2 MSPS (million samples per second) as the RSP1 does not allow this (this is behaviour that is standard for legit RSP1s).
+    - It also seems that the RSP1 has a minimum amount of sampling time of 1 second - this isn't 100% but no call backs seem to occur when I sleep the main execution thread for less then 1 second (even 999 999 nanosecconds doesn't work).
     - I don't think the callbacks can write all of the samples to a data file fast enough before the end of the program.
-    
+    - It's hard to verify but it seems that increasing the bandwidth increases the number of samples per second - this, for obvious reasons, should be what it does. It's late and I'm just making sure that this is happening and there aren't any other weird caveates. * * * Now im not sure that this is happening.
+

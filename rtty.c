@@ -32,6 +32,15 @@ void DataStreamCallback(short *xi, short *xq, sdrplay_api_StreamCbParamsT *param
     //printf("Num of samples: %i\n", numSamples);
     printf("firstSampleNum: %i, grChanged: %i, rfChanged: %i, fsChanged: %i, NumofSamples: %i, reset: %i\n", params->firstSampleNum, params->grChanged, params->rfChanged, params->fsChanged, numSamples, reset);
     //for (int i = 0; i < numSamples; i++) fprintf(file, "%hi,%hi\n", xi[i], xq[i]);
+    for (unsigned int i = 0; i < numSamples; i++){
+        printf("%i: %i |", i, xi[i]);
+    }
+    printf("\n\n\n");
+    for (unsigned int i = 0; i < numSamples; i++){
+        printf("%i: %i |", i, xq[i]);
+    }
+    printf("\n");
+    exit(1);
 }
 
 
@@ -50,7 +59,12 @@ int main(){
         printf("Device opened...\n");
         float apiVersion;
         sdrplay_api_ApiVersion(&apiVersion);
-        printf("Running API version %f\n", apiVersion);
+        printf("Running API version %.2f\n", apiVersion);
+        
+        if (apiVersion != SDRPLAY_API_VERSION)
+        {
+            printf("API version don't match (local=%.2f dll=%.2f)\n", SDRPLAY_API_VERSION, apiVersion);
+        }
 
         //
         // Enable debug logging output
@@ -83,9 +97,11 @@ int main(){
         sdrplay_api_GetDeviceParams(sdr->dev, &params);
  
         //params->devParams->fsFreq.fsHz = 400.0;
-        params->rxChannelA->tunerParams.bwType = sdrplay_api_BW_0_200;
+        
         params->devParams->fsFreq.fsHz = 2000000.0;// = 1000000.0;
+        //params->devParams->samplesPerPkt = 512;// = 1000000.0;
         //params->devParams->fsFreq.reCal = 1;// = 1000000.0;   
+        params->rxChannelA->tunerParams.bwType = sdrplay_api_BW_0_200;
         params->rxChannelA->tunerParams.rfFreq.rfHz = 102200000;//13845010;//104900000; // Frequency - default: 2000000.0
         //params->devParams->mode = sdrplay_api_BULK;
         
@@ -115,7 +131,7 @@ int main(){
             sleep(5);
         }
         */
-        sleep(1);
+        sleep(5);
 
         // Unlock API whilst the device has been used
         sdrplay_api_UnlockDeviceApi();

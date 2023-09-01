@@ -3,13 +3,15 @@ from scipy import signal
 from scipy.fft import fftshift
 import matplotlib.pyplot as plt
 
-N = 100000#2000000#100000#00 #290300
+'''
+N = 2000000#100000
 data = np.zeros((N, 2))
 file = open("dataDump.txt", "r")
 
 for i in range(0, N):
     line = file.readline()
     data[i] = line.split(',')
+'''
 '''
 ###
 while i < N:
