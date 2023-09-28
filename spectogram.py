@@ -3,27 +3,49 @@ from scipy import signal
 from scipy.fft import fftshift
 import matplotlib.pyplot as plt
 
-'''
-N = 2000000#100000
+
+N = 1024#100000#100000
 data = np.zeros((N, 2))
+x = [0 for i in range(N)]
 file = open("dataDump.txt", "r")
 
 for i in range(0, N):
     line = file.readline()
     data[i] = line.split(',')
-'''
-'''
-###
-while i < N:
-    line = file.readline()
-    if line == '':
-        break
-    data[i] = line.split(',')
-    i += 1
-###
+    x[i] = complex(data[i][0], data[i][1])  
+    #x[i] = [data[i][0], data[i][1]]
 
 file.close()
 
+print("Minimum of Imaginary", data[::, 0].min())
+
+
+
+Fs = 2e6 # lets say we sampled at 1 MHz
+# assume x contains your array of IQ samples
+x = x[0:N] # we will only take the FFT of the first 1024 samples, see text below
+PSD = np.abs(np.fft.fft(x))**2 / (N*Fs)
+PSD_log = 10.0*np.log10(PSD)
+PSD_shifted = np.fft.fftshift(PSD_log)
+print("PSD:")
+for i in range(len(PSD)):
+    print(PSD[i])
+
+
+# add the following line after doing x = x[0:1024]
+x = x * np.hamming(len(x)) # apply a Hamming window
+
+center_freq = 13562120 # frequency we tuned our SDR to
+f = np.arange(Fs/-2.0, Fs/2.0, Fs/N) # start, stop, step.  centered around 0 Hz
+f += center_freq # now add center frequency
+
+plt.xlabel("Frequency")
+plt.ylabel("PSD")
+#plt.figure(figsize=(19.20,10.80))
+plt.plot(f, PSD_shifted)
+plt.show()
+
+'''
 #data = np.array([[47, 41],[61, 38],[55, 48],[20, 74],[30, 79],[37, 52],[35, 39],[47, 46],[46, 57],[55, 60],[60, 48],[67, 21],[70, 13],[58, 29],[66, 43],[69, 40],[67, 32],[61, 38],[61, 38],[55, 38],[52, 57],[42, 62],[23, 61],[40, 60],[37, 52],[27, 42],[38, 31],[30, 45],[30, 45],[46, 22],[32, 31],[41, 22],[48, 25],[58, 35],[70, 29],[39, 65],[58, 45],[67, 21],[50, 49],[43, 41],[38, 36],[63, 51],[40, 60],[24, 50],[53, 41],[50, 38],[53, 24],[51, 16],[46, 28],[46, 57],[55, 54],[57, 11],[50, 43],[60, 43],[56, 21],[46, 57],[60, 43],[64, 35],[60, 43],[67, 26],[53, 35],[44, 49],[69, 40],[72, 21],[64, 35],[53, 41],[44, 55],[66, 48],[69, 45],[52, 57],[60, 43],[53, 41],[69, 40],[75, 34],[64, 35],[55, 32],[47, 52],[47, 52],[55, 38],[58, 41],[44, 49],[42, 46],[46, 62],[39, 65],[35, 50],[37, 57],[52, 57],[40, 38],[20, 69],[47, 52],[67, 21],[50, 43],[37, 47],[46, 57],[61, 26],[47, 46],[36, 68],[46, 22],[43, 41],[53, 30],[45, 33],[27, 36],[41, 22],[69, 40],[60, 14],[32, 31],[50, 43],[56, 27],[51, 22],[59, 19],[48, 36],[44, 31],[43, 41],[65, 19],[68, 16]])
 
 
@@ -77,7 +99,7 @@ plt.xlabel('Time [sec]')
 plt.show()
 '''
 
-
+'''
 ax = plt.figure().add_subplot(projection='3d')
 
 # Plot a sin curve using the x and y axes.
@@ -114,3 +136,4 @@ ax.set_zlabel('Z')
 ax.view_init(elev=20., azim=-35, roll=0)
 
 plt.show()
+'''

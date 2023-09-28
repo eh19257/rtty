@@ -1,9 +1,26 @@
+// Author Karl Sachs
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <complex.h>
 #include "sdrplay_api.h"
+#include "rtty.h"
+
 
 FILE *file;
+int foo = 0;
+
+// Get the amplitude of the frequency at the specified frequency k
+double fft(double k, short *xi, short *xq, unsigned int numSamples){
+    
+    double complex total = 0.0;
+    for (int n = 0; n < numSamples; n++){
+        total += (xi[n] + xq[n] * I) * cexp( (-M_2_PI * I * n * k) / numSamples );
+    }
+    // Return the magnitude of the complex output
+    return sqrt( pow(creal(total), 2) + pow(cimag(total), 2));
+}
 
 void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT tuner, sdrplay_api_EventParamsT *params, void *cbContext){
     printf("EVENT: ");
@@ -27,11 +44,26 @@ void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT tuner, s
     }
 }
 
-void DataStreamCallback(short *xi, short *xq, sdrplay_api_StreamCbParamsT *params, unsigned int numSamples, unsigned int reset, void *cbContext){
+void ViewDataStreamCallback(short *xi, short *xq, sdrplay_api_StreamCbParamsT *params, unsigned int numSamples, unsigned int reset, void *cbContext){
+    double fAmp = fft( ((rttyContext*) cbContext)->rfHz, xi, xq, numSamples);
+    printf("%f\n", fAmp);
+
+}
+
+
+/*
+void ViewDataStreamCallback(short *xi, short *xq, sdrplay_api_StreamCbParamsT *params, unsigned int numSamples, unsigned int reset, void *cbContext){
     //printf("Data Stream Call back | Printing xi array | Num of samples: %i\n", numSamples);
     //printf("Num of samples: %i\n", numSamples);
+    
+    foo++;
+    printf("%i ", foo);
+    
     printf("firstSampleNum: %i, grChanged: %i, rfChanged: %i, fsChanged: %i, NumofSamples: %i, reset: %i\n", params->firstSampleNum, params->grChanged, params->rfChanged, params->fsChanged, numSamples, reset);
-    //for (int i = 0; i < numSamples; i++) fprintf(file, "%hi,%hi\n", xi[i], xq[i]);
+    
+    for (int i = 0; i < numSamples; i++) fprintf(file, "%hi,%hi\n", xi[i], xq[i]);
+    
+    
     for (unsigned int i = 0; i < numSamples; i++){
         printf("%i: %i |", i, xi[i]);
     }
@@ -41,7 +73,10 @@ void DataStreamCallback(short *xi, short *xq, sdrplay_api_StreamCbParamsT *param
     }
     printf("\n");
     exit(1);
+    
 }
+*/
+
 
 
 int main(){
@@ -102,17 +137,22 @@ int main(){
         //params->devParams->samplesPerPkt = 512;// = 1000000.0;
         //params->devParams->fsFreq.reCal = 1;// = 1000000.0;   
         params->rxChannelA->tunerParams.bwType = sdrplay_api_BW_0_200;
-        params->rxChannelA->tunerParams.rfFreq.rfHz = 102200000;//13845010;//104900000; // Frequency - default: 2000000.0
+        params->rxChannelA->tunerParams.rfFreq.rfHz = 11039970;//13562120;     //11039970;//104900000; // Frequency - default: 2000000.0
         //params->devParams->mode = sdrplay_api_BULK;
         
 
         // Initialise the device
         sdrplay_api_CallbackFnsT cbFns;
-        cbFns.StreamACbFn = DataStreamCallback;
+        cbFns.StreamACbFn = ViewDataStreamCallback;
         cbFns.StreamBCbFn = NULL;   // RSP1 only has a single data stream
         cbFns.EventCbFn = EventCallback;
 
-        sdrplay_api_Init(sdr->dev, &cbFns, NULL);
+        // Add contextual information - here we can pass any contextual data to the callbacks
+        rttyContext context;
+        //context.fftPoints = 1024;
+        context.rfHz = params->devParams->fsFreq.fsHz;
+
+        sdrplay_api_Init(sdr->dev, &cbFns, &context);
         printf("Intialising device...\n");
 
         
@@ -126,15 +166,18 @@ int main(){
         */
         
         // pReSs EnTeR tO Exit
-        /*
+        
         while('\n' != getchar()){
-            sleep(5);
+            sleep(1);
         }
-        */
-        sleep(5);
+        
+        //sleep(15);
 
         // Unlock API whilst the device has been used
         sdrplay_api_UnlockDeviceApi();
+
+        // Uninititalise the device
+        //sdrplay_api_Uninit(sdr->dev);
     }
 
 
@@ -144,7 +187,7 @@ int main(){
     } else {
         printf("sdrplay_api_Close failed %s - unable to close the device\n", sdrplay_api_GetErrorString(err));
     }
-
+    //sleep(5);
     fclose(file);
 
     return 1;
